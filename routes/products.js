@@ -31,5 +31,42 @@ router.post('/', async (req, res) => {
     }
 });
 
+// GET route to fetch available products excluding those sold by the logged-in user
+router.get('/', async (req, res) => {
+    const { sellerId } = req.query; // Get the sellerId from query parameters
+
+    try {
+        const products = await Product.find({ 
+            status: 'Available', 
+            seller: { $ne: sellerId } // Exclude products sold by the logged-in user
+        });
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Failed to fetch products' });
+    }
+});
+
+// PUT route to mark a product as sold
+router.put('/:id/sell', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            { status: 'Sold' },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.json(updatedProduct);
+    } catch (error) {
+        console.error('Error updating product status:', error);
+        res.status(500).json({ message: 'Failed to update product status' });
+    }
+});
 
 module.exports = router;

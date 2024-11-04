@@ -7,11 +7,7 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Use environment variable for frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
 
