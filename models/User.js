@@ -1,10 +1,11 @@
+// models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['student', 'faculty'], required: true }, // Ensure enum values are in lowercase
+    role: { type: String, enum: ['student', 'faculty'], required: true },
     department: { type: String, required: true },
     year: {
         type: String,
@@ -12,7 +13,9 @@ const UserSchema = new mongoose.Schema({
         required: function() {
             return this.role === 'student'; // Year is only required if the role is 'student'
         }
-    }
+    },
+    name: { type: String, required: true },  // New field for name
+    phone: { type: String, required: true }  // New field for phone
 });
 
 // Hash the password before saving the user

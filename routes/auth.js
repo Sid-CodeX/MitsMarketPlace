@@ -7,7 +7,7 @@ require('dotenv').config(); // Load environment variables
 
 // POST route for user signup
 router.post('/signup', async (req, res) => {
-    const { email, password, role, department, year } = req.body;
+    const { email, password, role, department, year, name, phone } = req.body; // Include name and phone
 
     try {
         // Check if user already exists
@@ -22,7 +22,9 @@ router.post('/signup', async (req, res) => {
             password,  // Password will be hashed by Mongoose pre-save hook
             role: role.toLowerCase(),
             department,
-            year
+            year,
+            name,  // New field for name
+            phone   // New field for phone
         });
         await newUser.save();
 

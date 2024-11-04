@@ -2,12 +2,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const multer = require('multer');
 const router = express.Router();
-
-// Set up multer for file uploads
-const storage = multer.memoryStorage(); // Use memory storage for simplicity
-const upload = multer({ storage: storage });
+const multer = require('multer');
+const path = require('path');
 
 // Middleware to authenticate JWT token
 const authenticateToken = (req, res, next) => {
@@ -21,14 +18,29 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Directory to store uploaded images
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to the filename
+    },
+});
+
+const upload = multer({ storage: storage });
+
 // GET route to fetch user profile
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select('-password');
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.json(user);
+        const user = await User.findById(req.userId).select('-password'); // Exclude password
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user); // Send the user object as response
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching profile:', error); // Log the error for debugging
+        res.status(500).json({ message: 'Error fetching profile: ' + error.message });
     }
 });
 
@@ -40,22 +52,18 @@ router.put('/', authenticateToken, upload.single('profileImage'), async (req, re
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        // Update user fields
-        user.name = name || user.name;
-        user.email = email || user.email;
-        user.phone = phone || user.phone;
-        user.role = role || user.role;
-        user.department = department || user.department;
-        if (role === 'Student') {
-            user.year = year || user.year;
-        }
+        // Update user fields only if new values are provided
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (phone) user.phone = phone;
+        if (role) user.role = role;
+        if (department) user.department = department;
+        if (role === 'Student' && year) user.year = year;
 
         // Handle profile image upload
         if (req.file) {
-            // Here you should implement your image upload logic (e.g., upload to cloud storage)
-            // For example, using AWS S3, Cloudinary, etc.
-            // Assuming uploadImage returns the URL of the uploaded image
-            const uploadedImageUrl = await uploadImage(req.file); // Define this function
+            // Implement your image upload logic here
+            const uploadedImageUrl = await uploadImage(req.file); // Assuming uploadImage is defined
             user.profileImage = uploadedImageUrl;
         }
 

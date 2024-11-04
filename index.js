@@ -1,12 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path'); // Add path for serving static files
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
-app.use(express.json()); // Parse incoming JSON requests
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your frontend's origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
 
 // Debugging middleware to log incoming requests
 app.use((req, res, next) => {
@@ -14,10 +18,8 @@ app.use((req, res, next) => {
     next();
 });
 
-
+// Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -29,15 +31,17 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products'); // Import product routes
-const cartRoutes = require('./routes/cart'); // Import cart routes
-const uploadRoutes = require('./routes/upload'); // Import upload routes
+const productRoutes = require('./routes/products');
+const cartRoutes = require('./routes/cart');
+const uploadRoutes = require('./routes/upload');
+const profileRoutes = require('./routes/profile'); // Import profile routes
 
 // Use routes
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes); // Use product routes
-app.use('/api/cart', cartRoutes); // Use cart routes
-app.use('/api/upload', uploadRoutes); // Use upload routes
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/profile', profileRoutes); // Use profile routes
 
 // Global error handler
 app.use((err, req, res, next) => {
