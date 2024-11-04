@@ -5,12 +5,15 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors({
-    origin: 'http://localhost:3000', // Replace with your frontend's origin
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Use environment variable for frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
 
 // Debugging middleware to log incoming requests
 app.use((req, res, next) => {
@@ -45,8 +48,8 @@ app.use('/api/profile', profileRoutes); // Use profile routes
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send({ message: 'Internal Server Error' });
+    console.error('Error stack:', err.stack);
+    res.status(err.status || 500).send({ message: err.message || 'Internal Server Error' });
 });
 
 // Start the server
