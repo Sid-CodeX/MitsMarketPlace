@@ -12,12 +12,11 @@ router.post('/', async (req, res) => {
     }
 
     try {
-        // Use null or a default value for image if not provided
         const newProduct = new Product({
             name,
             category,
             price,
-            image: req.body.image || null, // Set image to null if not provided
+            image: req.body.image || null,
             description,
             contactNumber,
             seller,
@@ -33,12 +32,12 @@ router.post('/', async (req, res) => {
 
 // GET route to fetch available products excluding those sold by the logged-in user
 router.get('/', async (req, res) => {
-    const { sellerId } = req.query; // Get the sellerId from query parameters
+    const { sellerId } = req.query;
 
     try {
         const products = await Product.find({ 
             status: 'Available', 
-            seller: { $ne: sellerId } // Exclude products sold by the logged-in user
+            seller: { $ne: sellerId } 
         });
         res.json(products);
     } catch (error) {
@@ -55,7 +54,7 @@ router.put('/:id/sell', async (req, res) => {
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
             { status: 'Sold' },
-            { new: true } // Return the updated document
+            { new: true }
         );
 
         if (!updatedProduct) {
@@ -66,6 +65,41 @@ router.put('/:id/sell', async (req, res) => {
     } catch (error) {
         console.error('Error updating product status:', error);
         res.status(500).json({ message: 'Failed to update product status' });
+    }
+});
+
+// GET route to fetch products listed by the logged-in user
+router.get('/my-products', async (req, res) => {
+    const { sellerId } = req.query;
+
+    if (!sellerId) {
+        return res.status(400).json({ message: 'Seller ID is required' });
+    }
+
+    try {
+        const products = await Product.find({ seller: sellerId });
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching user products:', error);
+        res.status(500).json({ message: 'Failed to fetch user products' });
+    }
+});
+
+// DELETE route to remove a product from the selling list
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedProduct = await Product.findByIdAndDelete(id);
+        
+        if (!deletedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.json({ message: 'Product removed successfully' });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ message: 'Failed to delete product' });
     }
 });
 
