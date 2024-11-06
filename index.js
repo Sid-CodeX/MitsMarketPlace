@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
@@ -9,12 +10,32 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
+app.use(express.urlencoded({ extended: true }));
 
 // Debugging middleware to log incoming requests
 app.use((req, res, next) => {
     console.log(`${req.method} request for '${req.url}' with body:`, req.body);
     next();
+});
+
+// Set up storage for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'uploads')); // Ensure the 'uploads' folder exists
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png/;
+        const isValidType = allowedTypes.test(file.mimetype);
+        cb(null, isValidType ? true : cb(new Error('Only JPEG, JPG, and PNG images are allowed')));
+    },
 });
 
 // Serve static files from the 'uploads' directory
@@ -32,15 +53,22 @@ mongoose.connect(process.env.MONGODB_URI, {
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
-const uploadRoutes = require('./routes/upload');
-const profileRoutes = require('./routes/profile'); // Import profile routes
+const profileRoutes = require('./routes/profile');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/profile', profileRoutes); // Use profile routes
+app.use('/api/profile', profileRoutes);
+
+// Product image upload route
+app.post('/api/upload/image', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+    const imagePath = `/uploads/${req.file.filename}`; // Path to access the image
+    res.status(200).json({ imagePath });
+});
 
 // Global error handler
 app.use((err, req, res, next) => {
