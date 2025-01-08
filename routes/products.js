@@ -4,19 +4,18 @@ const path = require('path');
 const Product = require('../models/Product');
 const router = express.Router();
 
-// Configure multer for file storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Ensure 'uploads' directory exists
+        cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`); // Unique filename with timestamp
+        cb(null, `${Date.now()}-${file.originalname}`);
     },
 });
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png/;
         const isValidType = allowedTypes.test(file.mimetype);
@@ -28,10 +27,9 @@ const upload = multer({
     },
 });
 
-// POST route to create a new product
 router.post('/', upload.single('image'), async (req, res) => {
     const { name, category, price, description, contactNumber, seller } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null; // Image file path
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!name || !category || !price || !description || !contactNumber || !seller) {
         return res.status(400).json({ message: 'All fields except image are required' });
@@ -50,21 +48,20 @@ router.post('/', upload.single('image'), async (req, res) => {
         });
 
         await newProduct.save();
-        res.status(201).json(newProduct); // Send the newly created product as response
+        res.status(201).json(newProduct);
     } catch (error) {
         console.error('Error creating product:', error);
         res.status(500).json({ message: 'Product creation failed' });
     }
 });
 
-// GET route to fetch available products excluding the seller's items
 router.get('/', async (req, res) => {
     const { sellerId } = req.query;
 
     try {
         const products = await Product.find({
             status: 'Available',
-            seller: { $ne: sellerId }, // Exclude products from the logged-in seller
+            seller: { $ne: sellerId },
         });
         res.json(products);
     } catch (error) {
@@ -73,9 +70,12 @@ router.get('/', async (req, res) => {
     }
 });
 
-// PUT route to mark a product as sold
 router.put('/:id/sell', async (req, res) => {
     const { id } = req.params;
+
+    if (!id || id === 'undefined') {
+        return res.status(400).json({ message: 'Invalid product ID' });
+    }
 
     try {
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -95,7 +95,6 @@ router.put('/:id/sell', async (req, res) => {
     }
 });
 
-// GET route to fetch products listed by the seller
 router.get('/my-products', async (req, res) => {
     const { sellerId } = req.query;
 
@@ -112,7 +111,6 @@ router.get('/my-products', async (req, res) => {
     }
 });
 
-// DELETE route to remove a product
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
 
