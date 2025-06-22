@@ -1,0 +1,167 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.page-container {
+    position: relative;
+    height: 100vh;
+    background-image: url('./campus.jpeg'); /* Updated to the correct file name */
+    background-size: cover;
+    background-position: center;
+    color: #333; /* Set text color */
+}
+
+.dark-mode {
+    background-color: #1a1a1a; /* Dark background color */
+    color: #f0f0f0; /* Light text color */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7); /* White overlay with transparency */
+    z-index: 0; /* Place behind other content */
+}
+
+.dark-mode .overlay {
+    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay with transparency */
+}
+
+.header {
+    text-align: center;
+    position: absolute; /* Allows positioning relative to viewport */
+    top: 5%; /* Distance from the top */
+    right: 0;
+    left: 0;
+    z-index: 1; /* Place above the overlay */
+}
+
+.logo {
+    display: block;
+    margin: 0 auto 10px; /* Centers the logo and adds space below it */
+    max-width: 150px; /* Adjust the width as needed */
+}
+
+.toggle-container {
+    position: absolute;
+    top: 10px; /* Position near the top left corner */
+    left: 10px;
+    z-index: 1; /* Ensure it is above other elements */
+}
+
+.login-container {
+    max-width: 450px; /* Increased size */
+    margin: 20px; /* Add margin to create space around the container */
+    padding: 30px; /* Increased padding */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    position: absolute; /* Allows positioning relative to viewport */
+    right: 10%; /* Moves it towards the right side */
+    top: 20%; /* Moves it down from the top */
+}
+
+.dark-mode .login-container {
+    background-color: #2a2a2a; /* Dark background for login box */
+    border-color: #444; /* Dark border for login box */
+}
+
+.login-container h2 {
+    text-align: center;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column; /* Keep the form elements in a column */
+}
+
+.login-field {
+    display: flex; /* Make the text fields inline */
+    align-items: center; /* Vertically center the input and label */
+    margin-bottom: 15px; /* Space between input fields */
+}
+
+.login-container label {
+    margin-right: 10px; /* Space between the label and input */
+}
+
+.login-container input {
+    flex: 1; /* Makes the input fill available space */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.dark-mode .login-container input {
+    border-color: #444; /* Dark border for inputs */
+    background-color: #3a3a3a; /* Dark background for inputs */
+    color: #f0f0f0; /* Light text color for inputs */
+}
+
+.login-container button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+.login-container p {
+    text-align: center;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px; /* Rounded corners */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%; /* Circular knob */
+}
+
+input:checked + .slider {
+    background-color: #007bff; /* Change background color when checked */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px); /* Move knob when checked */
+}
+
