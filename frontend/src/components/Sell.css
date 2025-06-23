@@ -1,0 +1,63 @@
+/* Sell Section Styles */
+.sell-section {
+    max-width: 600px; /* Adjust this value to reduce the size of the box */
+    margin: 0 auto; /* Center the box */
+    padding: 2rem; /* Add some padding */
+    background-color:  rgba(204, 18, 40, 0.625); /* Lighter red base color */
+    border-radius: 15px; /* Increased rounding for a smoother look */
+    box-shadow: 0 4px 20px rgba(216, 3, 3, 0.893); /* Deeper shadow for more depth */
+    text-align: left;
+    transition: transform 0.3s, box-shadow 0.3s; /* Animation on hover */
+    color: rgb(255, 255, 255); /* Change text color to white for better readability */
+}
+
+/* Hover effect for the sell section */
+.sell-section:hover {
+    transform: scale(1.02); /* Slightly zoom in */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+/* Input styles */
+input, textarea {
+    padding: 0.75rem; /* Inner padding for input fields */
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Border style */
+    font-size: 1rem; /* Font size */
+    transition: border-color 0.3s; /* Transition for border color */
+}
+
+/* Input focus effect */
+input:focus, textarea:focus {
+    border-color: #c62828; /* Change border color on focus */
+    outline: none; /* Remove outline */
+    box-shadow: 0 0 5px rgba(198, 40, 40, 0.5); /* Subtle glow effect */
+}
+
+/* Button styles for forms */
+button[type="submit"] {
+    background-color: #28a745; /* Primary button color matching the main color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    padding: 0.75rem; /* Inner padding */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Transition for hover effect */
+}
+
+/* Button hover effect */
+button[type="submit"]:hover {
+    background-color: #a81010; /* Darker shade of red on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Lighter shade for backgrounds or additional elements */
+.lighter-bg {
+    background-color: #f8b2b2; /* Lighter shade of red */
+}
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sell-section {
+        padding: 1rem; /* Less padding on smaller screens */
+    }
+}
