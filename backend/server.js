@@ -1,118 +1,66 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
-const multer = require('multer');
 const helmet = require('helmet'); // For security headers
+const compression = require('compression'); // For Gzip compression
+const morgan = require('morgan'); // For HTTP request logging
 
 // Load environment variables from .env file.
-// Adjust path if your .env file is in a different location (e.g., config/config.env)
 dotenv.config();
 
+// --- Import Database Connection ---
+const connectDB = require('./config/db'); // Your new DB connection file
+
 // --- Import Custom Middleware and Routes ---
-const authRoutes = require('./routes/authRoutes'); // Your refactored authentication routes
-// Assuming these exist and you'll refactor them similarly later
-const productRoutes = require('./routes/products');
-const cartRoutes = require('./routes/cart');
-const profileRoutes = require('./routes/profile');
-// const uploadRoutes = require('./routes/upload'); // If you decide to move upload logic to its own route file
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const uploadRoutes = require('./routes/uploadRoutes'); // Your new upload routes
 
 // Global error handler - MUST be imported and used after all routes
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// --- Connect to Database ---
+connectDB(); // Call the function to connect to MongoDB
+
 // --- Global Middleware ---
 
-// Enable CORS for all routes (consider configuring specific origins in production)
+// Enable CORS for all routes (configure specific origins in production)
 app.use(cors());
+
+// Add security HTTP headers
+app.use(helmet());
+
+// Enable Gzip compression for all responses (optional but recommended for performance)
+app.use(compression());
+
+// HTTP request logger ('dev' is a common format for development)
+app.use(morgan('dev'));
 
 // Body parsers for incoming request bodies
 app.use(express.json()); // For JSON payloads (application/json)
 app.use(express.urlencoded({ extended: true })); // For URL-encoded payloads (application/x-www-form-urlencoded)
 
-// Add security HTTP headers
-app.use(helmet());
-
-// Custom logging middleware (optional, for debugging requests)
-app.use((req, res, next) => {
-    console.log(`${req.method} request for '${req.url}'`);
-    if (Object.keys(req.body).length > 0) {
-        console.log('Body:', req.body);
-    }
-    next();
-});
-
-// --- Multer Configuration for File Uploads ---
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, 'uploads');
-        // Ensure the 'uploads' folder exists. Multer creates it if it doesn't,
-        // but it's good practice to ensure permissions if deployed.
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        // Create a unique filename with timestamp to prevent collisions
-        cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '_')}`);
-    },
-});
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
-    fileFilter: (req, file, cb) => {
-        // Regex to allow only specific image types
-        const allowedTypes = /jpeg|jpg|png|gif/; // Added gif for more flexibility
-        const isValidType = allowedTypes.test(file.mimetype);
-        const isValidExtension = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (isValidType && isValidExtension) {
-            cb(null, true); // Accept the file
-        } else {
-            // Reject the file with an error message
-            cb(new Error('Only JPEG, JPG, PNG, and GIF images are allowed'), false);
-        }
-    },
-});
-
 // Serve static files from the 'uploads' directory
-// Accessible via /uploads/<filename> (e.g., http://localhost:5000/uploads/1678912345-myimage.png)
+// This makes images uploaded via /api/upload/image accessible via /uploads/<filename>
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// --- Database Connection ---
-mongoose.connect(process.env.MONGODB_URI, { // Using MONGO_URI as per your server.js snippet
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('Connected to MongoDB Atlas'))
-    .catch((err) => console.error('MongoDB connection error:', err));
-
 
 // --- API Routes ---
 
 // Mount your refactored authentication routes
 app.use('/api/auth', authRoutes);
-
-// Mount your other existing routes
+// Mount your product routes
 app.use('/api/products', productRoutes);
+// Mount your cart routes
 app.use('/api/cart', cartRoutes);
+// Mount your profile routes
 app.use('/api/profile', profileRoutes);
-// You might also have protected.js or upload.js as separate routes
-// app.use('/api/protected', protectedRoutes);
-// app.use('/api/upload', uploadRoutes); // If you make a dedicated uploadRoutes.js
-
-
-// Dedicated route for image uploads
-// This route uses the 'upload' middleware configured above
-app.post('/api/upload/image', upload.single('image'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: 'No file uploaded or file type is not allowed' });
-    }
-    // Return the path where the image can be accessed
-    const imagePath = `/uploads/${req.file.filename}`;
-    res.status(200).json({ success: true, imagePath, message: 'Image uploaded successfully' });
-});
+// Mount your dedicated upload routes
+app.use('/api/upload', uploadRoutes); // New dedicated route for uploads
 
 // --- Global Error Handling Middleware ---
 // This must be the last middleware mounted, after all routes
@@ -124,7 +72,7 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
 
-// Handle unhandled promise rejections (e.g., failed DB connection after initial start)
+// Handle unhandled promise rejections (important for robustness)
 process.on('unhandledRejection', (err, promise) => {
     console.error(`Error: ${err.message}`);
     // Close server & exit process
