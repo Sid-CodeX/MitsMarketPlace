@@ -1,25 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer'); // Multer needs to be configured here for this specific route
+const multer = require('multer');
 const path = require('path');
-const uploadController = require('../controllers/uploadController'); // Link to your new controller
 
-// --- Multer Configuration for this specific route (if not global in server.js) ---
-// Note: We are moving the Multer setup from server.js to here.
-// This makes the upload route self-contained.
+const uploadController = require('../controllers/uploadController');
+
+// Multer Configuration (Route-Scoped)
+// Defines how and where image files will be stored on disk
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../uploads'); // Go up one level to 'backend', then into 'uploads'
+        const uploadPath = path.join(__dirname, '../uploads'); // Store in /uploads directory
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname.replace(/\s/g, '_')}`);
+        const sanitizedFilename = file.originalname.replace(/\s/g, '_');
+        cb(null, `${Date.now()}-${sanitizedFilename}`); // Prefix filename with timestamp
     },
 });
 
 const upload = multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif/;
         const isValidType = allowedTypes.test(file.mimetype);
@@ -28,18 +29,16 @@ const upload = multer({
         if (isValidType && isValidExtension) {
             cb(null, true);
         } else {
-            // Pass an error to Multer, which express-async-handler/errorHandler can catch
-            cb(new Error('Only JPEG, JPG, PNG, and GIF images are allowed'), false);
+            cb(new Error('Only JPEG, JPG, PNG, and GIF image formats are allowed'));
         }
-    },
+    }
 });
 
-// --- Upload Route ---
-
+// Image Upload Route
 /**
  * @route   POST /api/upload/image
- * @desc    Uploads a single image file.
- * @access  Public (can be made Private by adding 'protect' middleware)
+ * @desc    Upload a single image file to the server
+ * @access  Public (can be secured by adding 'protect' middleware if needed)
  */
 router.post('/image', upload.single('image'), uploadController.uploadImage);
 
