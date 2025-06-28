@@ -1,0 +1,170 @@
+const Product = require('../models/Product');
+const User = require('../models/User');
+const asyncHandler = require('express-async-handler');
+const { validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+
+// Create new product (Faculty/Admin only)
+exports.createProduct = asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+    const { name, category, price, image, description } = req.body;
+    const sellerId = req.user.id;
+
+    const newProduct = new Product({ name, category, price, image, description, seller: sellerId, status: 'Available' });
+    await newProduct.save();
+
+    await User.findByIdAndUpdate(sellerId, { $push: { selling: newProduct._id } });
+
+    res.status(201).json({ success: true, message: 'Product created successfully', data: newProduct });
+});
+
+// Get all available products (optionally exclude user's own)
+exports.getAllProducts = asyncHandler(async (req, res) => {
+    const { excludeSellerId } = req.query;
+    const query = { status: 'Available' };
+
+    if (excludeSellerId) {
+        if (!mongoose.Types.ObjectId.isValid(excludeSellerId))
+            return res.status(400).json({ success: false, message: 'Invalid excludeSellerId format.' });
+        query.seller = { $ne: excludeSellerId };
+    }
+
+    const products = await Product.find(query).populate('seller', 'name email phone department').lean();
+    res.status(200).json({ success: true, count: products.length, data: products });
+});
+
+// Get product by ID
+exports.getProductById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id))
+        return res.status(400).json({ success: false, message: 'Invalid product ID format.' });
+
+    const product = await Product.findById(id).populate('seller', 'name email phone department').lean();
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    res.status(200).json({ success: true, data: product });
+});
+
+// Mark product as sold (seller only)
+exports.markProductAsSold = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+        return res.status(400).json({ success: false, message: 'Invalid product ID format.' });
+
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    if (product.seller.toString() !== req.user.id)
+        return res.status(403).json({ success: false, message: 'Unauthorized to mark as sold' });
+
+    if (product.status === 'Sold')
+        return res.status(400).json({ success: false, message: 'Product is already sold' });
+
+    product.status = 'Sold';
+    await product.save();
+
+    res.status(200).json({ success: true, message: 'Product marked as sold', data: product });
+});
+
+// Get products listed by authenticated user
+exports.getSellingItems = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id).populate('selling');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    res.status(200).json({ success: true, count: user.selling.length, data: user.selling });
+});
+
+// Delete product (seller or admin only)
+exports.deleteProduct = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+        return res.status(400).json({ success: false, message: 'Invalid product ID format.' });
+
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    if (product.seller.toString() !== req.user.id && req.user.role !== 'admin')
+        return res.status(403).json({ success: false, message: 'Unauthorized to delete this product' });
+
+    await User.findByIdAndUpdate(product.seller, { $pull: { selling: product._id } });
+    await product.deleteOne();
+
+    res.status(200).json({ success: true, message: 'Product deleted successfully' });
+});
+
+// Update product details (seller or admin only)
+exports.updateProduct = asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id))
+        return res.status(400).json({ success: false, message: 'Invalid product ID format.' });
+
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    if (product.seller.toString() !== req.user.id && req.user.role !== 'admin')
+        return res.status(403).json({ success: false, message: 'Unauthorized to update this product' });
+
+    Object.assign(product, req.body);
+    const updated = await product.save();
+
+    res.status(200).json({ success: true, message: 'Product updated successfully', data: updated });
+});
+
+// Checkout: Buy cart items
+exports.buyCartItems = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id).populate('addToCart.product');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (user.addToCart.length === 0)
+        return res.status(400).json({ success: false, message: 'Cart is empty' });
+
+    const purchased = [], failed = [];
+
+    for (const item of user.addToCart) {
+        const product = item.product;
+        if (!product) {
+            failed.push({ productId: item.product, message: 'Product no longer exists' });
+            continue;
+        }
+
+        if (product.status !== 'Available') {
+            failed.push({ productId: product._id, name: product.name, message: `Product is ${product.status}` });
+            continue;
+        }
+
+        if (product.seller.toString() === user._id.toString()) {
+            failed.push({ productId: product._id, name: product.name, message: 'Cannot buy your own product' });
+            continue;
+        }
+
+        product.status = 'Sold';
+        await product.save();
+
+        purchased.push({ productId: product._id, name: product.name, quantity: item.quantity, price: product.price });
+    }
+
+    user.addToCart = [];
+    await user.save();
+
+    if (purchased.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'No items purchased',
+            failedItems: failed,
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        message: 'Checkout successful',
+        purchasedItems: purchased,
+        failedItems: failed,
+    });
+});
