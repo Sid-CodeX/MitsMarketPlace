@@ -14,7 +14,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @access  Public
  */
 router.post(
-    '/register',
+    '/signup',
     [
         check('name', 'Name is required').notEmpty(),
         check('email', 'Please enter a valid email').isEmail(),
