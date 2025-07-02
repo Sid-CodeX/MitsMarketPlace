@@ -1,0 +1,118 @@
+/* src/styles/Sell.css - Specific styles for Sell Section */
+
+.sell-section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--secondary-color); /* Use secondary color for the background */
+    border-radius: 15px;
+    box-shadow: 0 4px 20px var(--shadow-strong); /* Use strong shadow variable */
+    text-align: left;
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s ease;
+    color: white; /* Text color always white for this section */
+}
+
+body.dark-mode .sell-section {
+    background-color: var(--background-dark-card); /* Darker background in dark mode */
+    box-shadow: 0 4px 20px var(--shadow-dark); /* Darker shadow */
+    border: 1px solid var(--border-color-dark);
+    color: var(--text-dark-mode); /* Adjust text color for dark mode */
+}
+
+.sell-section:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px var(--shadow-medium); /* Enhanced shadow on hover */
+}
+
+/* Input and textarea styling - mostly inherits from global .input-field */
+.sell-section .form-group input,
+.sell-section .form-group textarea,
+.sell-section .form-group select {
+    /* Inherits base styles from global .input-field */
+    /* Override specific colors if needed for this section */
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--text-dark); /* Ensure text is dark on light background input */
+}
+
+body.dark-mode .sell-section .form-group input,
+body.dark-mode .sell-section .form-group textarea,
+body.dark-mode .sell-section .form-group select {
+    background-color: rgba(0, 0, 0, 0.4); /* Transparent dark for dark mode */
+    border-color: var(--border-color-dark);
+    color: var(--text-dark-mode);
+}
+
+.sell-section .form-group input:focus,
+.sell-section .form-group textarea:focus,
+.sell-section .form-group select:focus {
+    border-color: var(--primary-color); /* Use primary color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Photo upload label styles (within sell-section or specific component) */
+.photo-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    position: absolute; /* Needs to be inside a relative parent */
+    bottom: 0;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* This hover might apply to a container holding the image + label */
+.image-upload-container:hover .photo-upload-label {
+    opacity: 1; /* Fully opaque on hover */
+}
+
+/* Align input fields in the same row */
+.input-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 1rem; /* Add gap for spacing between columns */
+}
+
+.input-row > div { /* Target direct children of input-row */
+    flex: 1; /* Allow items to grow and shrink */
+    min-width: 48%; /* Ensure minimum width for wrapping on small screens */
+}
+
+/* Form submit button */
+.sell-section button[type="submit"] {
+    /* Use button-primary or other global button classes in JSX */
+    /* background-color, color, border, padding, border-radius, cursor, transition inherited */
+    /* Override specific hover if needed */
+    background-color: var(--secondary-color); /* Use the red secondary color */
+}
+
+.sell-section button[type="submit"]:hover {
+    background-color: var(--secondary-hover-color);
+    transform: translateY(-2px);
+}
+
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sell-section {
+        padding: 1rem;
+    }
+    .input-row {
+        flex-direction: column; /* Stack inputs vertically on small screens */
+        gap: 0; /* Remove gap when stacked */
+    }
+    .input-row > div {
+        width: 100%; /* Full width when stacked */
+        margin-bottom: 1rem; /* Add space between stacked items */
+    }
+    .input-row > div:last-child {
+        margin-bottom: 0;
+    }
+}

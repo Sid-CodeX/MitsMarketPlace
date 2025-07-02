@@ -1,0 +1,201 @@
+/* src/components/Cart.css */
+
+.cart-section {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--shadow-small);
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.cart-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.cart-list {
+    list-style: none;
+    padding: 0;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: var(--background-color-light); /* Lighter background for list items */
+}
+
+.dark-mode .cart-item {
+    background-color: var(--dark-mode-card-bg-light); /* Adjust for dark mode if needed */
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--primary-color-dark);
+    display: block; /* Ensures name is on its own line */
+    margin-bottom: 5px;
+}
+
+.cart-item-description {
+    font-size: 0.9em;
+    color: var(--text-color-secondary);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.quantity-btn,
+.remove-item-btn,
+.buy-all-btn,
+.clear-cart-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-btn {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+}
+
+.quantity-btn:hover:not(:disabled) {
+    background-color: var(--button-secondary-hover);
+}
+
+.quantity-btn:disabled {
+    background-color: var(--button-disabled-bg);
+    color: var(--button-disabled-text);
+    cursor: not-allowed;
+}
+
+.remove-item-btn {
+    background-color: var(--delete-button-bg);
+    color: var(--button-text);
+}
+
+.remove-item-btn:hover {
+    background-color: var(--delete-button-hover);
+}
+
+.cart-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.cart-summary h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.clear-cart-btn {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+}
+
+.clear-cart-btn:hover {
+    background-color: var(--button-secondary-hover);
+}
+
+.buy-all-btn {
+    background-color: var(--button-primary-bg);
+    color: var(--button-text);
+}
+
+.buy-all-btn:hover {
+    background-color: var(--button-primary-hover);
+}
+
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-large);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    color: var(--text-color);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin: 0 5px;
+}
+
+.modal-button.cancel {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+}
+
+.modal-button.cancel:hover {
+    background-color: var(--button-secondary-hover);
+}
+
+.modal-button.confirm {
+    background-color: var(--button-primary-bg);
+    color: var(--button-text);
+}
+
+.modal-button.confirm:hover {
+    background-color: var(--button-primary-hover);
+}
+
+.error-message {
+    color: var(--error-color);
+    background-color: var(--error-background);
+    border: 1px solid var(--error-border);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+}

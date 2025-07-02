@@ -1,0 +1,522 @@
+/* src/styles/global.css - Foundational and Reusable Styles */
+
+/* CSS Variables for consistent theming */
+:root {
+    /* Light Mode Colors */
+    --primary-color: #007bff; /* Blue for primary actions/buttons */
+    --primary-hover-color: #0056b3;
+    --secondary-color: #d90429; /* Red for accents/navbar */
+    --secondary-hover-color: #b71c1c;
+    --success-color: #28a745; /* Green for success actions */
+    --success-hover-color: #218838;
+    --danger-color: #dc3545; /* Red for destructive actions */
+    --danger-hover-color: #c82333;
+
+    --background-light: #f9f9f9; /* Soft light background */
+    --background-white: #ffffff;
+    --text-dark: #333;
+    --text-medium: #4a4a4a;
+    --text-light: #666; /* Used for less prominent text */
+    --border-color-light: #ccc;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.2);
+    --shadow-strong: rgba(0, 0, 0, 0.25); /* For elevated elements like sell section */
+    --modal-overlay-light: rgba(255, 255, 255, 0.7);
+
+    /* Dark Mode Colors */
+    --background-dark: #1a1a1a;
+    --background-dark-card: #2a2a2a;
+    --text-dark-mode: #f0f0f0;
+    --text-dark-mode-light: #d0d0d0;
+    --border-color-dark: #444;
+    --shadow-dark: rgba(0, 0, 0, 0.3);
+    --modal-overlay-dark: rgba(0, 0, 0, 0.7);
+    --link-dark-mode: #00ccff;
+    --link-dark-mode-hover: #66e0ff;
+
+    /* Specific for AuthPage */
+    --auth-bg-light-overlay: rgba(0, 0, 0, 0.5); /* Dimming effect */
+    --auth-bg-dark-color: #222831; /* Solid background for dark mode auth page */
+
+    /* Specific for Sell/Profile section header gradient */
+    --sell-profile-gradient-start: #c6170aa8;
+    --sell-profile-gradient-end: #c60404;
+    --sell-shadow-color: rgba(216, 3, 3, 0.893);
+
+    /* Success/Error message colors */
+    --success-bg: #d4edda;
+    --success-text: #155724;
+    --success-border: #c3e6cb;
+    --error-bg: #f8d7da;
+    --error-text: #721c24;
+    --error-border: #f5c6cb;
+    --error-text-dark: #ff7676; /* Lighter red for dark mode errors */
+}
+
+/* Base styles and resets */
+* {
+    box-sizing: border-box; /* Global box-sizing */
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif; /* Keep your preferred font */
+    line-height: 1.6;
+    color: var(--text-dark);
+    background-color: var(--background-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-dark); /* Default heading color */
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: var(--text-dark-mode); /* Dark mode heading color */
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--primary-hover-color);
+    text-decoration: underline;
+}
+
+body.dark-mode a {
+    color: var(--link-dark-mode);
+}
+
+body.dark-mode a:hover {
+    color: var(--link-dark-mode-hover);
+}
+
+/* Dark mode specific styles for the body */
+body.dark-mode {
+    color: var(--text-dark-mode);
+    background-color: var(--background-dark);
+}
+
+/* Reusable Utility Classes */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem; /* Consistent horizontal padding */
+}
+
+/* --- Buttons --- */
+.button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none; /* For button-like links */
+    display: inline-block; /* For button-like links */
+    border: none;
+    white-space: nowrap; /* Prevent text wrapping on small buttons */
+}
+
+.button-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.button-primary:hover {
+    background-color: var(--primary-hover-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.button-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.button-secondary:hover {
+    background-color: var(--secondary-hover-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.button-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.button-success:hover {
+    background-color: var(--success-hover-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.button-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.button-danger:hover {
+    background-color: var(--danger-hover-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.button:disabled {
+    background-color: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- Form Elements --- */
+.input-field {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid var(--border-color-light);
+    font-size: 1rem;
+    box-sizing: border-box; /* Ensures padding doesn't increase total width */
+    background-color: var(--background-white);
+    color: var(--text-dark);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.dark-mode .input-field {
+    background-color: var(--background-dark-card);
+    border-color: var(--border-color-dark);
+    color: var(--text-dark-mode);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Textareas using input-field styles */
+textarea.input-field {
+    resize: vertical; /* Allow vertical resizing only */
+    min-height: 80px; /* Minimum height for text areas */
+}
+
+/* --- Messages (Error/Success) --- */
+.error-message {
+    font-size: 0.875rem;
+    color: var(--error-text);
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-border);
+    padding: 0.75rem 1rem;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+body.dark-mode .error-message {
+    color: var(--error-text-dark);
+    background-color: #4a1c1c; /* Darker error background */
+    border-color: #721c24;
+}
+
+.success-message {
+    font-size: 0.9rem;
+    color: var(--success-text);
+    background-color: var(--success-bg);
+    border: 1px solid var(--success-border);
+    padding: 0.75rem 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* --- Modals --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--modal-overlay-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+body.dark-mode .modal-overlay {
+    background-color: var(--modal-overlay-dark);
+}
+
+.modal-content {
+    background-color: var(--background-white);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-medium);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--background-dark-card);
+    color: var(--text-dark-mode);
+    box-shadow: 0 5px 15px var(--shadow-dark);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--text-dark); /* Default color for headings within modal */
+}
+
+body.dark-mode .modal-content h3 {
+    color: var(--text-dark-mode);
+}
+
+.modal-content p {
+    margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* --- Common Layout Elements (Header/Logo/Toggle) --- */
+.page-header {
+    position: absolute;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3; /* Above overlay and form card */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.logo {
+    max-width: 250px; /* Default max-width, can be overridden per component if needed */
+    height: auto;
+}
+
+/* Page Overlay (used on AuthPage) */
+.page-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--auth-bg-light-overlay); /* Dimming effect */
+    z-index: 1; /* Below form card, above background */
+}
+
+/* Dark Mode Toggle (common) */
+.toggle-container {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 45px;
+    height: 25px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 25px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(20px);
+    -ms-transform: translateX(20px);
+    transform: translateX(20px);
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+body.dark-mode .toggle-label {
+    color: var(--text-dark-mode);
+}
+
+/* General Link Button (used for switching forms) */
+.text-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: inherit; /* Inherit font size from parent */
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.text-link-button:hover {
+    color: var(--primary-hover-color);
+}
+
+body.dark-mode .text-link-button {
+    color: var(--link-dark-mode);
+}
+
+body.dark-mode .text-link-button:hover {
+    color: var(--link-dark-mode-hover);
+}
+
+/* Common form field for input/select elements */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Default styles for list items (can be extended per component) */
+.list-item {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+body.dark-mode .list-item {
+    border-color: var(--border-color-dark);
+}
+
+/* Logout button (common if displayed globally) */
+.logout-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background: linear-gradient(45deg, #de1f18, #781a07); /* Specific gradient, consider variables if reused */
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(228, 9, 9, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100; /* Ensure it's above other content */
+}
+
+.logout-button:hover {
+    background: linear-gradient(45deg, #ef530a, #dd3e0a);
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 6px 15px rgba(198, 13, 13, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.logout-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(211, 14, 14, 0.741);
+}
+
+/* Scrollbar styling for `overflow-x: auto` elements */
+::-webkit-scrollbar {
+    height: 8px;
+    width: 8px; /* For vertical scrollbars, if any */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 10px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: var(--background-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: var(--link-dark-mode);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover-color);
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: var(--link-dark-mode-hover);
+}
+
+
+/* General responsive padding */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.5rem; /* Less padding on smaller screens */
+    }
+}

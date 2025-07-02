@@ -1,0 +1,105 @@
+/* src/styles/AuthPage.css - Specific styles for AuthPage */
+
+.auth-page-container {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease; /* Smooth transition for dark mode */
+}
+
+/* Dark mode specific background */
+body.dark-mode .auth-page-container {
+    background-image: none; /* Remove background image in dark mode */
+    background-color: var(--auth-bg-dark-color); /* Use solid dark background */
+}
+
+/* Authentication Form Card Styling */
+.auth-form-card {
+    position: relative;
+    z-index: 2; /* Above overlay */
+    background-color: var(--background-white);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow-light);
+    width: 100%;
+    max-width: 450px;
+    margin-top: 10rem; /* Push down to avoid logo collision */
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode .auth-form-card {
+    background-color: var(--background-dark-card);
+    border: 1px solid var(--border-color-dark);
+    box-shadow: 0 4px 15px var(--shadow-dark);
+}
+
+.auth-form-card h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    /* Color inherited from global.css h2 styles */
+}
+
+.auth-form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Spacing between form fields */
+}
+
+/* Specific styling for select elements (used in Signup) - inherits most from .input-field */
+.form-group select {
+    /* Most styles inherited from .input-field in global.css */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.4l-118%20118.2L32.4%2074.8a17.6%2017.6%200%200%0A0-25.3%2023.7%2023.7%200%200%200%200%203.2l130.5%20130.5c.9.9%202%201.2%203.2%201.2s2.3-.3%203.2-1.2L287%2098.2c6.3-6.3%206.3-16.5%200-22.8%200-.1-.1-.1-.2-.2z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7rem top 50%;
+    background-size: 0.65rem auto;
+}
+
+body.dark-mode .form-group select {
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.4l-118%20118.2L32.4%2074.8a17.6%2017.6%200%200%0A0-25.3%2023.7%2023.7%200%200%200%200%203.2l130.5%20130.5c.9.9%202%201.2%203.2%201.2s2.3-.3%203.2-1.2L287%2098.2c6.3-6.3%206.3-16.5%200-22.8%200-.1-.1-.1-.2-.2z%22%2F%3E%3C%2Fsvg%3E');
+}
+
+.auth-switch-text {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    color: var(--text-light); /* Default light mode color */
+}
+
+body.dark-mode .auth-switch-text {
+    color: var(--text-dark-mode-light); /* Dark mode color */
+}
+
+/* Responsiveness for smaller screens */
+@media (max-width: 600px) {
+    .auth-page-container {
+        padding: 1rem;
+    }
+    .page-header .logo { /* Target logo specifically within auth page header if needed */
+        max-width: 180px;
+    }
+    .auth-form-card {
+        padding: 1.5rem;
+        margin-top: 8rem; /* Adjust margin for smaller logo */
+    }
+    .auth-form-card h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-height: 800px) and (max-width: 600px) {
+    .auth-form-card {
+        margin-top: 6rem;
+    }
+}

@@ -1,0 +1,154 @@
+/* src/styles/Dashboard.css - Specific styles for Dashboard */
+
+.dashboard-container {
+    /* font-family and background-color handled by global.css body */
+    min-height: 100vh;
+    padding-top: 0.5rem; /* Space between logo and navbar if logo is above */
+    background-color: var(--background-light); /* Default to light mode background */
+}
+
+body.dark-mode .dashboard-container {
+    background-color: var(--background-dark); /* Dark mode background */
+}
+
+/* Logo container at the top of Dashboard */
+.dashboard-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem;
+    background-color: var(--background-white);
+    border-bottom: 2px solid var(--border-color-light);
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0;
+    box-shadow: 0 2px 5px var(--shadow-light); /* Added subtle shadow */
+}
+
+body.dark-mode .dashboard-logo-container {
+    background-color: var(--background-dark-card);
+    border-color: var(--border-color-dark);
+    box-shadow: 0 2px 5px var(--shadow-dark);
+}
+
+.dashboard-logo-container .logo {
+    max-width: 120px; /* Smaller logo for dashboard */
+}
+
+/* Navbar container */
+.navbar {
+    background-color: var(--secondary-color); /* Red color */
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 4px 12px var(--shadow-medium);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-radius: 0 0 10px 10px;
+    margin-bottom: 1rem; /* Space below navbar */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.dark-mode .navbar {
+    background-color: var(--background-dark-card); /* Darker navbar in dark mode */
+    box-shadow: 0 4px 12px var(--shadow-dark);
+}
+
+/* Navbar button styles */
+.navbar button {
+    background-color: transparent;
+    color: white; /* Always white text on red/dark navbar */
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    border-radius: 50px;
+    letter-spacing: 0.5px;
+}
+
+body.dark-mode .navbar button {
+    color: var(--text-dark-mode); /* Lighter text in dark mode navbar */
+}
+
+/* Hover and focus effects */
+.navbar button:hover,
+.navbar button:focus {
+    background-color: var(--secondary-hover-color); /* Darker red for hover */
+    transform: scale(1.05);
+    /* box-shadow handled by button class, but navbar specific shadow here */
+    box-shadow: 0 2px 5px var(--shadow-light); /* Subtle shadow on hover */
+}
+
+body.dark-mode .navbar button:hover,
+body.dark-mode .navbar button:focus {
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle hover in dark mode */
+    box-shadow: 0 2px 5px var(--shadow-dark);
+}
+
+
+/* Active button style */
+.navbar button.active {
+    background-color: var(--background-white);
+    color: var(--text-medium); /* Matches the navbar background */
+    font-weight: 600;
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+body.dark-mode .navbar button.active {
+    background-color: var(--primary-color); /* Use primary color for active in dark mode */
+    color: white;
+    box-shadow: 0 4px 8px var(--shadow-dark);
+}
+
+
+/* Content section shared style for Buy, Sell, Cart, Profile */
+.dashboard-content-section {
+    padding: 2rem;
+    background-color: var(--background-white);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    margin: 1rem auto; /* Center content and provide space */
+    max-width: 1000px; /* A max-width for content sections */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.dark-mode .dashboard-content-section {
+    background-color: var(--background-dark-card);
+    box-shadow: 0 4px 12px var(--shadow-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+.dashboard-content-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    /* color handled by global.css h2 styles */
+}
+
+/* --- Responsive Layout for Dashboard --- */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column; /* Stack navbar items */
+        padding: 1rem;
+    }
+
+    .navbar button {
+        width: 100%; /* Full width buttons */
+        margin-bottom: 0.5rem;
+    }
+    .navbar button:last-child {
+        margin-bottom: 0;
+    }
+
+    .dashboard-logo-container .logo {
+        max-width: 100px; /* Even smaller logo on mobile */
+    }
+
+    .dashboard-content-section {
+        padding: 1rem;
+        margin: 0.5rem auto;
+    }
+}

@@ -1,0 +1,192 @@
+/* src/styles/Buy.css - Specific styles for Buy Section */
+
+.buy-section {
+    /* min-height, font-family, base background/color handled by global.css body */
+    padding: 2rem;
+    background-color: var(--background-light); /* Default to light mode background */
+    color: var(--text-dark); /* Ensure text color for direct elements */
+}
+
+body.dark-mode .buy-section {
+    background-color: var(--background-dark); /* Dark mode background */
+    color: var(--text-dark-mode);
+}
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: 60%;
+    /* Inherits padding, border, font-size, box-sizing, color from .input-field in global.css */
+    box-shadow: 0 2px 5px var(--shadow-light);
+    transition: box-shadow 0.3s;
+}
+
+body.dark-mode .search-input {
+    box-shadow: 0 2px 5px var(--shadow-dark);
+}
+
+.search-input:focus {
+    /* Focus styles inherited from .input-field in global.css */
+    /* Add specific focus shadow here if it needs to be different */
+    box-shadow: 0 2px 10px rgba(0, 123, 255, 0.3); /* Can define as a variable if reused */
+}
+
+.category-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.category-link {
+    /* Inherits button-like styles from global.css .button-primary */
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 5px var(--shadow-light);
+}
+
+.category-link:hover {
+    background-color: var(--primary-hover-color);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+body.dark-mode .category-link {
+    background-color: var(--link-dark-mode);
+    box-shadow: 0 2px 5px var(--shadow-dark);
+}
+
+body.dark-mode .category-link:hover {
+    background-color: var(--link-dark-mode-hover);
+    box-shadow: 0 4px 8px var(--shadow-dark);
+}
+
+.category-section {
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background-color: var(--background-white);
+    border-radius: 15px;
+    box-shadow: 0 2px 15px var(--shadow-light);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode .category-section {
+    background-color: var(--background-dark-card);
+    box-shadow: 0 2px 15px var(--shadow-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+.category-title {
+    /* Color inherited from global.css h3 styles */
+    margin-bottom: 1.5rem; /* Explicit margin for title */
+}
+
+.product-grid {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto; /* For horizontal scrolling */
+    padding-bottom: 1rem; /* Space for scrollbar */
+}
+
+.product-card {
+    background-color: var(--background-light);
+    border-radius: 15px;
+    box-shadow: 0 2px 10px var(--shadow-light);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s, background-color 0.3s ease, box-shadow 0.3s ease;
+    min-width: 250px;
+    max-width: 300px;
+    flex: 0 0 auto; /* Prevent stretching and shrinking */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body.dark-mode .product-card {
+    background-color: var(--background-dark-card);
+    box-shadow: 0 2px 10px var(--shadow-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.product-name {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark); /* Explicit color for name */
+}
+
+body.dark-mode .product-name {
+    color: var(--text-dark-mode);
+}
+
+.product-price {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+body.dark-mode .product-price {
+    color: var(--link-dark-mode);
+}
+
+.product-description {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    flex-grow: 1; /* Allows description to push buttons to bottom */
+}
+
+body.dark-mode .product-description {
+    color: var(--text-dark-mode-light);
+}
+
+.product-contact {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+body.dark-mode .product-contact {
+    color: var(--text-dark-mode-light);
+}
+
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto; /* Pushes buttons to the bottom */
+    width: 100%; /* Ensure buttons span width */
+    justify-content: center;
+}
+
+/* Using global button classes */
+.add-to-cart-button {
+    /* inherits from .button-success */
+    flex: 1;
+}
+.buy-button {
+    /* inherits from .button-primary */
+    flex: 1;
+}
+
+/* No need to redefine .modal-overlay, .modal-content, .modal-button as they are in global.css */
+/* No need to redefine .success-message as it is in global.css */

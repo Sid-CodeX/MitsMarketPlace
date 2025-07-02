@@ -1,0 +1,131 @@
+/* General styles for the status section */
+.status-section {
+    background-color: #fff; /* Light background for contrast */
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    max-width: 800px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Section header styles */
+.status-section h2 {
+    font-size: 2rem;
+    color: #a62828; /* Adjusted dark red for heading */
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+/* List styles */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Individual status item styles */
+.status-item {
+    padding: 1.5rem;
+    margin: 1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    background-color: rgba(231, 76, 60, 0.2); /* Light red background */
+    transition: background-color 0.3s ease, transform 0.2s;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.status-item:hover {
+    background-color: rgba(231, 76, 60, 0.3); /* Slightly darker light red on hover */
+    transform: translateY(-2px);
+}
+
+/* Product details styling */
+.product-details {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+}
+
+.product-name {
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: #333; /* Dark grey for product name */
+}
+
+.product-description {
+    font-size: 0.95rem;
+    color: #555; /* Slightly darker grey for description */
+    margin-top: 0.3rem;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    color: #e74c3c; /* Red for price */
+    margin-top: 0.2rem;
+}
+
+/* Status and button container */
+.status-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Product status styles */
+.product-status {
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.product-status.pending {
+    background-color: #f39c12; /* Orange for pending */
+    color: #fff; /* White for text */
+}
+
+.product-status.sold {
+    background-color: #c0392b; /* Dark red for sold */
+    color: #fff; /* White for text */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .status-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product-status {
+        margin-top: 0.5rem;
+    }
+}
+
+/* Button styles */
+.remove-button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff; /* White for button text */
+    background-color: #e74c3c; /* Red for remove */
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.remove-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    transform: scale(1.05);
+}
+
+/* Loading and error styles */
+.loading, .error {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #c0392b; /* Dark red for loading/error messages */
+}
