@@ -1,104 +1,165 @@
-// Frontend: Dashboard.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
-import Buy from './Buy';
-import Sell from './Sell';
-import Cart from './Cart';
-import Status from './Status';
-import Profile from './Profile';
-import logo from './logo.png';
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import '../styles/Dashboard.css';
+
+// Import components
+import Buy from '../components/Buy'; // Assuming Buy is in components folder
+import Sell from '../components/Sell';
+import Cart from '../components/Cart';
+import Status from '../components/Status';
+import Profile from '../components/Profile';
+
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
-    const [activeSection, setActiveSection] = useState('buy');
-    const [cartItems, setCartItems] = useState([]);
-    const [sellingProducts, setSellingProducts] = useState([]);
-    const [profileData, setProfileData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        role: 'student',
-        department: '',
-        year: '',
-    });
-    const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150');
-    const [showModal, setShowModal] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-
+    const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
-    const products = [
-        // Product details here
-    ];
-    const handleLogout = async () => {
+    const [activeSection, setActiveSection] = useState('buy');
+    const [sellingProducts, setSellingProducts] = useState([]); // Products listed for sale by the user
+    const [profileData, setProfileData] = useState({
+        name: '', email: '', phone: '', role: '', department: '', year: '', profileImage: ''
+    });
+    const [buyableProducts, setBuyableProducts] = useState([]); // State for products available for buying
+
+
+    // Function to fetch products currently listed for sale by the user
+    const fetchSellingProducts = useCallback(async () => {
+        if (!isAuthenticated) {
+            setSellingProducts([]);
+            return;
+        }
         try {
             const token = localStorage.getItem('token');
-            await fetch('http://localhost:5000/auth/logout', {
-                method: 'POST',
+            const response = await axios.get(`${API_BASE_URL}/api/products/my-products`, {
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
             });
-
-            // Clear token and navigate to login page
-            localStorage.removeItem('token');
-            navigate('/login');
+            // Ensure you're accessing the 'data' property from the backend response
+            if (response.data && Array.isArray(response.data.data)) { // Check for .data.data
+                const updatedData = response.data.data.map(product => ({
+                    ...product,
+                    status: product.status === 'Available' ? 'Pending' : product.status // Apply display logic here
+                }));
+                setSellingProducts(updatedData);
+            } else {
+                console.error("Selling products response.data is not an array:", response.data);
+                setSellingProducts([]); // Fallback to empty array
+            }
         } catch (error) {
-            console.error('Logout failed:', error);
+            console.error('Error fetching selling products:', error);
+        }
+    }, [isAuthenticated]);
+
+    // Function to fetch user profile data
+    const fetchProfileData = useCallback(async () => {
+        if (!isAuthenticated) {
+            setProfileData({ name: '', email: '', phone: '', role: '', department: '', year: '', profileImage: '' });
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/api/profile/me`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setProfileData(response.data);
+        } catch (error) {
+            console.error('Error fetching profile data:', error);
+        }
+    }, [isAuthenticated]);
+
+    // Function to fetch products available for buying
+    const fetchBuyableProducts = useCallback(async () => {
+        if (!isAuthenticated) {
+            setBuyableProducts([]);
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/api/products`, {
+                    headers: { Authorization: `Bearer ${token}` } // Include token if this endpoint is protected
+            });
+            // ************ CRITICAL CHANGE HERE ************
+            // The backend returns { success: true, count: ..., data: productsArray }
+            // You need to set the state to response.data.data (the actual array)
+            if (response.data && Array.isArray(response.data.data)) {
+                setBuyableProducts(response.data.data); // Set state to the array inside 'data'
+            } else {
+                console.error("Buyable products response.data is not an array:", response.data);
+                setBuyableProducts([]); // Fallback to empty array
+            }
+        } catch (error) {
+            console.error('Error fetching buyable products:', error);
+        }
+    }, [isAuthenticated]);
+
+    // Fetch initial data when component mounts or authentication status changes
+    useEffect(() => {
+        fetchSellingProducts();
+        fetchProfileData();
+        fetchBuyableProducts(); // Fetch buyable products on mount
+    }, [fetchSellingProducts, fetchProfileData, fetchBuyableProducts]);
+
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const handleAddToCart = async (product) => { // Changed productId to full product object
+        if (!isAuthenticated) {
+            alert('Please log in to add items to the cart.');
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(
+                `${API_BASE_URL}/cart/add`,
+                { productId: product._id, quantity: 1 }, // Pass productId and quantity
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            alert(`"${product.name}" added to cart!`); // More descriptive message
+        } catch (error) {
+            console.error('Error adding item to cart:', error);
+            alert(error.response?.data?.message || 'Failed to add item to cart.');
         }
     };
 
-    const addToCart = (product) => {
-        const itemToAdd = {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            imageUrl: product.imageUrl,
-        };
-        setCartItems((prevItems) => [...prevItems, itemToAdd]);
+    const handleSellSuccess = () => {
+        fetchSellingProducts();
+        fetchBuyableProducts();
     };
 
-    const removeItemFromCart = (index) => {
-        const updatedCart = cartItems.filter((_, i) => i !== index);
-        setCartItems(updatedCart);
+    const handleCartPurchaseSuccess = () => {
+        fetchSellingProducts();
+        fetchBuyableProducts();
     };
 
-    const clearCart = () => setCartItems([]);
-
-    const handleProfileChange = (e) => {
-        const { name, value } = e.target;
-        setProfileData({ ...profileData, [name]: value });
-    };
-
-    const handleBuyClick = (product) => {
-        setSelectedProduct(product);
-        setShowModal(true);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedProduct(null);
-    };
-
-    const handleConfirmPurchase = () => {
-        if (selectedProduct) {
-            console.log(`Purchased: ${selectedProduct.name} for $${selectedProduct.price}`);
-            closeModal();
-        }
+    const handleProductRemoved = () => {
+        fetchSellingProducts();
+        fetchBuyableProducts();
     };
 
     return (
         <div className="dashboard-container">
-            {/* Logo Section */}
             <div className="logo-container">
-                <img src={logo} alt="Logo" className="logo" />
+                <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="logo" />
                 <button className="logout-button" onClick={handleLogout}>
                     Logout
                 </button>
             </div>
 
-            {/* Navigation Bar */}
             <div className="navbar">
                 <button className={activeSection === 'buy' ? 'active' : ''} onClick={() => setActiveSection('buy')}>Buy</button>
                 <button className={activeSection === 'sell' ? 'active' : ''} onClick={() => setActiveSection('sell')}>Sell</button>
@@ -107,39 +168,31 @@ const Dashboard = () => {
                 <button className={activeSection === 'profile' ? 'active' : ''} onClick={() => setActiveSection('profile')}>Profile</button>
             </div>
 
-            {/* Other Sections */}
             <div className="page-design">
-                {activeSection === 'buy' && <Buy products={products} addToCart={addToCart} handleBuyClick={handleBuyClick} />}
-                {activeSection === 'sell' && <Sell sellingProducts={sellingProducts} setSellingProducts={setSellingProducts} />}
-                {activeSection === 'cart' && (
-                    <Cart 
-                        cartItems={cartItems} 
-                        clearCart={clearCart} 
-                        removeItemFromCart={removeItemFromCart} 
-                        handleBuyClick={handleBuyClick} 
+                {activeSection === 'buy' && (
+                    <Buy products={buyableProducts} addToCart={handleAddToCart} /> 
+                )}
+                {activeSection === 'sell' && (
+                    <Sell
+                        onSellSuccess={handleSellSuccess}
                     />
                 )}
-                {activeSection === 'status' && <Status sellingProducts={sellingProducts} />}
+                {activeSection === 'cart' && (
+                    <Cart onPurchaseSuccess={handleCartPurchaseSuccess} />
+                )}
+                {activeSection === 'status' && (
+                    <Status
+                        sellingProducts={sellingProducts}
+                        onProductRemoved={handleProductRemoved}
+                    />
+                )}
                 {activeSection === 'profile' && (
-                    <Profile 
-                        profileData={profileData} 
-                        setProfileData={setProfileData} 
-                        profileImage={profileImage} 
-                        setProfileImage={setProfileImage} 
+                    <Profile
+                        profileData={profileData}
+                        onProfileUpdate={fetchProfileData}
                     />
                 )}
             </div>
-
-            {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Confirm Purchase</h3>
-                        <p>Are you sure you want to buy <strong>{selectedProduct?.name}</strong> for ${selectedProduct?.price}?</p>
-                        <button onClick={closeModal} className="modal-button">Cancel</button>
-                        <button onClick={handleConfirmPurchase} className="modal-button">Confirm</button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
