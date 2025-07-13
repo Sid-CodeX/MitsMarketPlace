@@ -1,54 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import './Status.css';
-import { useAuth } from '../AuthContext';
+import React from 'react'; // No useEffect, useState, useAuth needed if props are passed
+import axios from 'axios'; // Use axios for consistency
+import '../styles/Status.css';
 
-const Status = () => {
-    const { sellerId } = useAuth();
-    const [sellingProducts, setSellingProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    // Status.js
-    useEffect(() => {
-        const fetchSellingProducts = async () => {
-            try {
-                const response = await fetch(`http://localhost:5000/api/products/my-products?sellerId=${sellerId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch products');
-                }
-                const data = await response.json();
-                const updatedData = data.map(product => ({
-                    ...product,
-                    status: product.status === 'Available' ? 'Pending' : product.status
-                }));
-                setSellingProducts(updatedData);
-            } catch (error) {
-                console.error(error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+// Define the API base URL from the environment variable
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-        fetchSellingProducts();
-    }, [sellerId]);
+// Status component now receives 'sellingProducts' and 'onProductRemoved' as props
+const Status = ({ sellingProducts, onProductRemoved }) => {
+    // No need for internal fetch, loading, or error states if sellingProducts is passed from Dashboard
 
     const handleRemoveProduct = async (productId) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
-                method: 'DELETE'
+            const token = localStorage.getItem('token'); // Get token for authentication
+            const response = await axios.delete(`${API_BASE_URL}/products/${productId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
-            if (response.ok) {
-                setSellingProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
-            } else {
-                console.error('Failed to remove product');
+
+            if (response.status === 200) { // Axios automatically handles non-2xx as errors by throwing errors for 4xx/5xx
+                alert('Product removed successfully!');
+                if (onProductRemoved) {
+                    onProductRemoved(); // Notify Dashboard to refresh selling products
+                }
             }
         } catch (error) {
             console.error('Error removing product:', error);
+            alert(error.response?.data?.message || 'Failed to remove product.');
         }
     };
 
-    if (loading) return <p className="loading">Loading products...</p>;
-    if (error) return <p className="error">{error}</p>;
+    // If sellingProducts is empty, display a message
+    if (!sellingProducts || sellingProducts.length === 0) {
+        return (
+            <div className="status-section">
+                <h2>Your Selling Products</h2>
+                <p className="info-message">You currently have no products listed for sale.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="status-section">
@@ -62,6 +52,7 @@ const Status = () => {
                             <span className="product-price">Price: ₹{product.price}</span>
                         </div>
                         <div className="status-action">
+                            {/* Display status as received (Dashboard already applied 'Available' to 'Pending' mapping) */}
                             <span className={`product-status ${product.status.toLowerCase()}`}>
                                 {product.status}
                             </span>
@@ -69,6 +60,7 @@ const Status = () => {
                                 className="remove-button"
                                 onClick={() => handleRemoveProduct(product._id)}
                             >
+                                {/* Button text based on status, as mapped in Dashboard */}
                                 {product.status === 'Pending' ? 'Withdraw' : 'Remove'}
                             </button>
                         </div>
