@@ -1,165 +1,236 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Profile.js
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import axios from 'axios';
-import './Profile.css';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
+import '../styles/Profile.css';
 
-const Profile = () => {
+// Define the API base URL from the environment variable
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+// Profile component expects an 'onProfileUpdate' prop from Dashboard
+const Profile = ({ onProfileUpdate }) => {
+    const { isAuthenticated } = useAuth(); // Get authentication status
     const [profileData, setProfileData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [profileUpdated, setProfileUpdated] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false); // New state for password form
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    
-    // State for dropdowns
-    const roles = ['student', 'faculty'];
+    const [profileError, setProfileError] = useState(null);
+    const [passwordError, setPasswordError] = useState(null);
+    const [profileSuccess, setProfileSuccess] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+
+    // State for dropdowns (ensure these match your backend enums/options)
+    const roles = ['Student', 'Faculty']; // Capitalized for display
     const departments = ['CSE', 'CSE-AI', 'CSE-CY', 'AI-DS', 'ECE', 'EEE', 'ME', 'CE', 'MCA'];
     const years = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
-    // Default avatar image
-    const defaultAvatar = 'https://m.media-amazon.com/images/I/41jLBhDISxL.jpg';
-    // Profile.js
-    useEffect(() => {
-        const fetchProfileData = async () => {
+    // Default avatar image (use a local path or a more robust CDN if available)
+    const defaultAvatar = 'https://i.ibb.co/VtP871T/default-avatar.png'; // Example placeholder image
+
+    // Function to fetch profile data from the backend
+    const fetchProfileData = useCallback(async () => {
+        if (!isAuthenticated) {
+            setProfileError('User not authenticated.');
+            setLoading(false);
+            setProfileData(null);
+            return;
+        }
+
+        setLoading(true);
+        setProfileError(null); // Clear previous errors
+        try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                setError('User not authenticated.');
-                setLoading(false);
-                return;
-            }
+            const response = await axios.get(`${API_BASE_URL}/api/profile/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            // Ensure fetched role matches dropdown capitalization if needed for display
+            setProfileData({ ...response.data, role: response.data.role.charAt(0).toUpperCase() + response.data.role.slice(1) });
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            setProfileError('Failed to load profile data. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    }, [isAuthenticated]);
 
-            const source = axios.CancelToken.source();
-
-            try {
-                const response = await axios.get('http://localhost:5000/api/profile', {
-                    headers: { Authorization: `Bearer ${token}` },
-                    cancelToken: source.token,
-                });
-                
-                setProfileData(response.data);
-            } catch (error) {
-                if (axios.isCancel(error)) {
-                    console.log('Fetch canceled:', error.message);
-                } else {
-                    console.error('Error fetching profile:', error);
-                    setError('Failed to load profile data.');
-                }
-            } finally {
-                setLoading(false);
-            }
-
-            return () => source.cancel('Request canceled on component unmount');
-        };
-
+    // Fetch profile data on component mount or when auth status changes
+    useEffect(() => {
         fetchProfileData();
-    }, []);
+    }, [fetchProfileData]); // Dependency array to re-fetch when fetchProfileData changes (due to isAuthenticated)
+
 
     const handleProfileChange = (e) => {
         const { name, value } = e.target;
-        setProfileData({ ...profileData, [name]: value });
+        setProfileData((prevData) => ({ ...prevData, [name]: value }));
     };
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
-    
-        const token = localStorage.getItem('token');
-        const formData = new FormData();
-        formData.append('name', profileData.name || '');
-        formData.append('email', profileData.email || '');
-        formData.append('phone', profileData.phone || '');
-        formData.append('role', profileData.role?.toLowerCase() || '');
-        formData.append('department', profileData.department || '');
-        if (profileData.role === 'student') {
-            formData.append('year', profileData.year || '');
+        setProfileError(null);
+        setProfileSuccess('');
+
+        if (!profileData) {
+            setProfileError('No profile data to submit.');
+            return;
         }
-    
+
         try {
-            await axios.put('http://localhost:5000/api/profile', formData, {
+            const token = localStorage.getItem('token');
+            const payload = {
+                name: profileData.name,
+                phone: profileData.phone,
+                department: profileData.department,
+                // Send role in lowercase as per backend validation check: check('role').isIn(['student', 'faculty'])
+                role: profileData.role?.toLowerCase(),
+                profileImage: profileData.profileImage || defaultAvatar, // Send current image or default
+            };
+            // Only include year if role is student
+            if (profileData.role?.toLowerCase() === 'student') {
+                payload.year = profileData.year;
+            }
+
+            const response = await axios.put(`${API_BASE_URL}/api/profile/update`, payload, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json', // Sending JSON data
                 },
             });
-    
-            setProfileUpdated(true);
-            setIsEditing(false);
-            setTimeout(() => setProfileUpdated(false), 3000);
+
+            setProfileData({ ...response.data, role: response.data.role.charAt(0).toUpperCase() + response.data.role.slice(1) }); // Update with server response
+            setProfileSuccess('Profile updated successfully!');
+            setIsEditing(false); // Exit editing mode
+            if (onProfileUpdate) {
+                onProfileUpdate(); // Notify Dashboard to refresh its profile data
+            }
+            setTimeout(() => setProfileSuccess(''), 3000); // Clear success message after 3 seconds
         } catch (error) {
             console.error('Error updating profile:', error);
-            setError('Profile update failed: ' + (error.response?.data?.message || 'Unknown error'));
+            setProfileError(error.response?.data?.message || 'Profile update failed. Please try again.');
         }
     };
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p className="error-message">{error}</p>;
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordError(null);
+        setPasswordSuccess('');
+
+        if (!currentPassword || !newPassword) {
+            setPasswordError('Please fill in both current and new passwords.');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `${API_BASE_URL}/api/profile/update-password`,
+                { currentPassword, newPassword },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            setPasswordSuccess('Password updated successfully!');
+            setCurrentPassword('');
+            setNewPassword('');
+            setIsUpdatingPassword(false); // Hide password update form
+            if (onProfileUpdate) {
+                onProfileUpdate(); // Notify Dashboard if it needs to react to password change (e.g., re-login prompt)
+            }
+            setTimeout(() => setPasswordSuccess(''), 3000);
+        } catch (error) {
+            console.error('Error updating password:', error);
+            setPasswordError(error.response?.data?.message || 'Password update failed. Please try again.');
+        }
+    };
+
+
+    if (loading) return <p className="loading-message">Loading profile...</p>;
+    if (profileError && !profileData) return <p className="error-message">{profileError}</p>; // Display error if no data could be loaded
 
     return (
         <div className="profile-section">
-            <h2>Profile Section</h2>
+            <h2>User Profile</h2>
             <div className="profile-header">
-                <img src={defaultAvatar} alt="Profile" className="profile-image" />
-                <FaEdit 
-                    className="edit-icon" 
-                    onClick={() => setIsEditing(!isEditing)} 
-                    title="Edit Profile" 
+                <img src={profileData?.profileImage || defaultAvatar} alt="Profile" className="profile-image" />
+                <FaEdit
+                    className="edit-icon"
+                    onClick={() => setIsEditing(!isEditing)}
+                    title="Edit Basic Profile"
                 />
             </div>
+
+            {profileSuccess && <p className="success-message">{profileSuccess}</p>}
+            {profileError && <p className="error-message">{profileError}</p>}
+
             {isEditing ? (
-                <form onSubmit={handleProfileSubmit}>
-                    {/* Form fields for editing profile */}
-                    <div>
-                        <label>Name:</label>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            value={profileData.name || ''} 
-                            onChange={handleProfileChange} 
-                            required 
+                <form onSubmit={handleProfileSubmit} className="profile-form">
+                    <div className="form-group">
+                        <label htmlFor="name">Name:</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={profileData.name || ''}
+                            onChange={handleProfileChange}
+                            required
                         />
                     </div>
-                    <div>
-                        <label>Email:</label>
-                        <input 
-                            type="email" 
-                            name="email" 
-                            value={profileData.email || ''} 
-                            onChange={handleProfileChange} 
-                            required 
+                    {/* Email is read-only as per backend, not updated via /update route */}
+                    <div className="form-group">
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={profileData.email || ''}
+                            readOnly // Email is likely not editable via this route
+                            disabled
                         />
                     </div>
-                    <div>
-                        <label>Phone:</label>
-                        <input 
-                            type="tel" 
-                            name="phone" 
-                            value={profileData.phone || ''} 
-                            onChange={handleProfileChange} 
-                            required 
+                    <div className="form-group">
+                        <label htmlFor="phone">Phone:</label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value={profileData.phone || ''}
+                            onChange={handleProfileChange}
+                            required
                         />
                     </div>
-                    <div>
-                        <label>Role:</label>
-                        <select 
-                            name="role" 
-                            value={profileData.role || ''} 
-                            onChange={handleProfileChange} 
-                            required 
+                    <div className="form-group">
+                        <label htmlFor="role">Role:</label>
+                        <select
+                            id="role"
+                            name="role"
+                            value={profileData.role || ''}
+                            onChange={handleProfileChange}
+                            required
                         >
                             <option value="">Select Role</option>
                             {roles.map((role) => (
                                 <option key={role} value={role}>
-                                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                                    {role}
                                 </option>
                             ))}
                         </select>
                     </div>
-                    {profileData.role === 'student' && (
-                        <div>
-                            <label>Year:</label>
-                            <select 
-                                name="year" 
-                                value={profileData.year || ''} 
-                                onChange={handleProfileChange} 
-                                required 
+                    {profileData.role?.toLowerCase() === 'student' && ( // Check lowercase for logic
+                        <div className="form-group">
+                            <label htmlFor="year">Year:</label>
+                            <select
+                                id="year"
+                                name="year"
+                                value={profileData.year || ''}
+                                onChange={handleProfileChange}
+                                required
                             >
                                 <option value="">Select Year</option>
                                 {years.map((year) => (
@@ -170,35 +241,86 @@ const Profile = () => {
                             </select>
                         </div>
                     )}
-                    <div>
-                        <label>Department:</label>
-                        <select 
-                            name="department" 
-                            value={profileData.department || ''} 
-                            onChange={handleProfileChange} 
-                            required 
+                    <div className="form-group">
+                        <label htmlFor="department">Department:</label>
+                        <select
+                            id="department"
+                            name="department"
+                            value={profileData.department || ''}
+                            onChange={handleProfileChange}
+                            required
                         >
                             <option value="">Select Department</option>
-                            {departments.map((department) => (
-                                <option key={department} value={department}>
-                                    {department}
+                            {departments.map((dept) => (
+                                <option key={dept} value={dept}>
+                                    {dept}
                                 </option>
                             ))}
                         </select>
                     </div>
-                    <button type="submit">Update Profile</button>
+                    <div className="form-group">
+                        <label htmlFor="profileImage">Profile Image URL:</label>
+                        <input
+                            type="url"
+                            id="profileImage"
+                            name="profileImage"
+                            value={profileData.profileImage || ''}
+                            onChange={handleProfileChange}
+                            placeholder="Enter image URL"
+                        />
+                    </div>
+                    <button type="submit" className="submit-button">Update Profile</button>
+                    <button type="button" className="cancel-button" onClick={() => setIsEditing(false)}>Cancel</button>
                 </form>
             ) : (
                 <div className="profile-details">
-                    <p><strong>Name:</strong> {profileData.name}</p>
-                    <p><strong>Email:</strong> {profileData.email}</p>
-                    <p><strong>Phone:</strong> {profileData.phone}</p>
-                    <p><strong>Role:</strong> {profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1)}</p>
-                    {profileData.role === 'student' && <p><strong>Year:</strong> {profileData.year}</p>}
-                    <p><strong>Department:</strong> {profileData.department}</p>
+                    <p><strong>Name:</strong> {profileData?.name || 'N/A'}</p>
+                    <p><strong>Email:</strong> {profileData?.email || 'N/A'}</p>
+                    <p><strong>Phone:</strong> {profileData?.phone || 'N/A'}</p>
+                    <p><strong>Role:</strong> {profileData?.role || 'N/A'}</p>
+                    {profileData?.role?.toLowerCase() === 'student' && <p><strong>Year:</strong> {profileData?.year || 'N/A'}</p>}
+                    <p><strong>Department:</strong> {profileData?.department || 'N/A'}</p>
+
+                    {/* Password Update Section Toggle */}
+                    <button
+                        className="toggle-password-update"
+                        onClick={() => setIsUpdatingPassword(!isUpdatingPassword)}
+                    >
+                        {isUpdatingPassword ? 'Hide Password Update' : 'Change Password'}
+                    </button>
                 </div>
             )}
-            {profileUpdated && <p className="success-message">Profile updated successfully!</p>}
+
+            {/* Password Update Form */}
+            {isUpdatingPassword && (
+                <form onSubmit={handlePasswordSubmit} className="password-form">
+                    <h3>Change Password</h3>
+                    {passwordSuccess && <p className="success-message">{passwordSuccess}</p>}
+                    {passwordError && <p className="error-message">{passwordError}</p>}
+                    <div className="form-group">
+                        <label htmlFor="currentPassword">Current Password:</label>
+                        <input
+                            type="password"
+                            id="currentPassword"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="newPassword">New Password:</label>
+                        <input
+                            type="password"
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="submit-button">Update Password</button>
+                    <button type="button" className="cancel-button" onClick={() => setIsUpdatingPassword(false)}>Cancel</button>
+                </form>
+            )}
         </div>
     );
 };
